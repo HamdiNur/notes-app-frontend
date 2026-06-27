@@ -51,23 +51,69 @@
       </div>
 
       <!-- Notes grid -->
-      <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div
-          v-for="note in filtered"
-          :key="note._id"
-          @click="$router.push('/notes/' + note._id)"
-          class="bg-white rounded-xl p-5 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition"
-        >
-          <h3 class="font-semibold text-gray-800 mb-2 truncate">{{ note.title }}</h3>
-          <p class="text-sm text-gray-500 line-clamp-3">{{ note.content }}</p>
-          <div class="flex items-center justify-between mt-4">
-            <span class="text-xs text-gray-400">{{ new Date(note.createdAt).toLocaleDateString() }}</span>
-            <button
-              @click.stop="handleDelete(note._id)"
-              class="text-xs text-red-400 hover:text-red-600 transition"
+<!-- Notes grid -->
+      <div v-else class="space-y-6">
+        <!-- Pinned section -->
+        <div v-if="filtered.some(n => n.pinned)">
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">📌 Pinned</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div v-for="note in filtered.filter(n => n.pinned)" :key="note._id"
+              :style="{ background: note.color || '#ffffff' }"
+              class="rounded-xl p-5 shadow-sm border border-yellow-200 hover:shadow-md transition"
             >
-              Delete
-            </button>
+              <div class="flex items-start justify-between mb-2">
+                <h3 @click="$router.push('/notes/' + note._id)"
+                  class="font-semibold text-gray-800 truncate cursor-pointer hover:text-blue-600 flex-1">
+                  {{ note.title }}
+                </h3>
+<button @click="notes.pinNote(note._id, true)" 
+  class="ml-2 text-gray-300 hover:text-yellow-400 text-base leading-none flex-shrink-0 transition">📌</button>              </div>
+              <p @click="$router.push('/notes/' + note._id)"
+                class="text-sm text-gray-500 line-clamp-3 cursor-pointer mb-4">
+                {{ note.content }}
+              </p>
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-gray-400">{{ new Date(note.createdAt).toLocaleDateString() }}</span>
+                <div class="flex gap-2">
+                  <button @click="$router.push('/notes/' + note._id)"
+                    class="text-xs bg-white/70 text-blue-500 px-3 py-1 rounded-lg hover:bg-white transition">Edit</button>
+                  <button @click="handleDelete(note._id)"
+                    class="text-xs bg-white/70 text-red-400 px-3 py-1 rounded-lg hover:bg-white transition">Delete</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Other notes -->
+        <div>
+          <p v-if="filtered.some(n => n.pinned)" class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Others</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div v-for="note in filtered.filter(n => !n.pinned)" :key="note._id"
+              :style="{ background: note.color || '#ffffff' }"
+              class="rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition"
+            >
+              <div class="flex items-start justify-between mb-2">
+                <h3 @click="$router.push('/notes/' + note._id)"
+                  class="font-semibold text-gray-800 truncate cursor-pointer hover:text-blue-600 flex-1">
+                  {{ note.title }}
+                </h3>
+                <button @click="notes.pinNote(note._id, true)" class="ml-2 text-gray-300 hover:text-yellow-400 text-lg transition">📌</button>
+              </div>
+              <p @click="$router.push('/notes/' + note._id)"
+                class="text-sm text-gray-500 line-clamp-3 cursor-pointer mb-4">
+                {{ note.content }}
+              </p>
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-gray-400">{{ new Date(note.createdAt).toLocaleDateString() }}</span>
+                <div class="flex gap-2">
+                  <button @click="$router.push('/notes/' + note._id)"
+                    class="text-xs bg-white/70 text-blue-500 px-3 py-1 rounded-lg hover:bg-white transition">Edit</button>
+                  <button @click="handleDelete(note._id)"
+                    class="text-xs bg-white/70 text-red-400 px-3 py-1 rounded-lg hover:bg-white transition">Delete</button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -87,11 +133,14 @@ const notes = useNotesStore()
 const search = ref('')
 
 const filtered = computed(() => {
-  return notes.notes.filter(n =>
+  const result = notes.notes.filter(n =>
     n.title.toLowerCase().includes(search.value.toLowerCase())
   )
+  return [
+    ...result.filter(n => n.pinned),
+    ...result.filter(n => !n.pinned)
+  ]
 })
-
 async function handleDelete(id) {
   await notes.deleteNote(id)
 }
