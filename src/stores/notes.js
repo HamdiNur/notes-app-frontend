@@ -19,13 +19,7 @@ export const useNotesStore = defineStore('notes', () => {
     loading.value = false
   }
 
-async function createNote(title, content, color = '#ffffff') {
-  const res = await axios.post('http://localhost:5000/api/notes', 
-    { title, content, color }, 
-    { headers: getHeaders() }
-  )
-  notes.value.unshift(res.data)
-}
+
 async function pinNote(id, pinned) {
   const res = await axios.put(
     `http://localhost:5000/api/notes/${id}`,
@@ -35,15 +29,23 @@ async function pinNote(id, pinned) {
   const index = notes.value.findIndex(n => n._id === id)
   if (index !== -1) notes.value[index] = res.data
 }
+async function createNote(title, content, color = '#ffffff', tags = []) {
+  const res = await axios.post('http://localhost:5000/api/notes',
+    { title, content, color, tags },
+    { headers: getHeaders() }
+  )
+  notes.value.unshift(res.data)
+}
+
 
   async function deleteNote(id) {
     await axios.delete(`http://localhost:5000/api/notes/${id}`, { headers: getHeaders() })
     notes.value = notes.value.filter(n => n._id !== id)
   }
-async function updateNote(id, title, content, color = '#ffffff') {
+async function updateNote(id, title, content, color = '#ffffff', tags = []) {
   const res = await axios.put(
     `http://localhost:5000/api/notes/${id}`,
-    { title, content, color },
+    { title, content, color, tags },
     { headers: getHeaders() }
   )
   const index = notes.value.findIndex(n => n._id === id)

@@ -1,18 +1,50 @@
 <template>
   <div class="min-h-screen bg-gray-100">
     <!-- Navbar -->
-    <nav class="bg-white shadow-sm px-6 py-4 flex items-center justify-between">
-      <h1 class="text-xl font-bold text-blue-600">📝 Notes App</h1>
-      <div class="flex items-center gap-4">
-        <span class="text-sm text-gray-500">Hey, {{ auth.user?.name }}</span>
+<nav class="bg-white shadow-sm px-6 py-4 flex items-center justify-between relative">
+  <h1 class="text-xl font-bold text-blue-600">📝 Notes App</h1>
+  
+  <div class="relative">
+    <button
+      @click="showDropdown = !showDropdown"
+      class="flex items-center gap-2 hover:bg-gray-50 px-3 py-2 rounded-lg transition"
+    >
+      <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold">
+        {{ auth.user?.name?.charAt(0).toUpperCase() }}
+      </div>
+      <span class="text-sm font-medium text-gray-700">{{ auth.user?.name }}</span>
+      <span class="text-gray-400 text-xs">{{ showDropdown ? '▲' : '▼' }}</span>
+    </button>
+
+    <!-- Dropdown -->
+    <div
+      v-if="showDropdown"
+      class="absolute right-0 top-12 w-56 bg-white rounded-xl shadow-lg border border-gray-100 z-50 overflow-hidden"
+    >
+      <!-- User info -->
+      <div class="px-4 py-3 border-b border-gray-100">
+        <p class="text-sm font-semibold text-gray-800">{{ auth.user?.name }}</p>
+        <p class="text-xs text-gray-400 mt-0.5">{{ auth.user?.email }}</p>
+      </div>
+
+      <!-- Stats -->
+      <div class="px-4 py-3 border-b border-gray-100">
+        <p class="text-xs text-gray-400">Total notes</p>
+        <p class="text-sm font-bold text-blue-600">{{ notes.notes.length }} notes</p>
+      </div>
+
+      <!-- Actions -->
+      <div class="px-2 py-2">
         <button
           @click="handleLogout"
-          class="text-sm bg-red-50 text-red-500 px-4 py-2 rounded-lg hover:bg-red-100 transition"
+          class="w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded-lg transition"
         >
-          Logout
+          🚪 Logout
         </button>
       </div>
-    </nav>
+    </div>
+  </div>
+</nav>
 
     <!-- Main -->
     <div class="max-w-4xl mx-auto px-6 py-8">
@@ -37,6 +69,25 @@
         placeholder="🔍 Search notes..."
         class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
+      <!-- Tag filter -->
+<div class="flex gap-2 flex-wrap mb-6">
+  <button
+    @click="selectedTag = ''"
+    :class="selectedTag === '' ? 'bg-blue-600 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'"
+    class="text-xs px-3 py-1.5 rounded-full border border-gray-200 transition"
+  >
+    All
+  </button>
+  <button
+    v-for="tag in allTags"
+    :key="tag"
+    @click="selectedTag = tag"
+    :class="selectedTag === tag ? 'bg-blue-600 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'"
+    class="text-xs px-3 py-1.5 rounded-full border border-gray-200 transition"
+  >
+    {{ tag }}
+  </button>
+</div>
 
       <!-- Loading -->
       <div v-if="notes.loading" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -66,12 +117,23 @@
                   class="font-semibold text-gray-800 truncate cursor-pointer hover:text-blue-600 flex-1">
                   {{ note.title }}
                 </h3>
-<button @click="notes.pinNote(note._id, true)" 
-  class="ml-2 text-gray-300 hover:text-yellow-400 text-base leading-none flex-shrink-0 transition">📌</button>              </div>
+        <button @click="notes.pinNote(note._id, true)" 
+  class="ml-2 text-gray-300 hover:text-yellow-400 text-base leading-none flex-shrink-0 transition">📌</button>
+             </div>
               <p @click="$router.push('/notes/' + note._id)"
                 class="text-sm text-gray-500 line-clamp-3 cursor-pointer mb-4">
                 {{ note.content }}
               </p>
+              <div class="flex gap-1 flex-wrap mb-2">
+       <span
+          v-for="tag in note.tags"
+          :key="tag"
+       class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full"
+  >
+    {{ tag }}
+  </span>
+</div>
+
               <div class="flex items-center justify-between">
                 <span class="text-xs text-gray-400">{{ new Date(note.createdAt).toLocaleDateString() }}</span>
                 <div class="flex gap-2">
@@ -104,6 +166,15 @@
                 class="text-sm text-gray-500 line-clamp-3 cursor-pointer mb-4">
                 {{ note.content }}
               </p>
+              <div v-if="note.tags?.length" class="flex gap-1 flex-wrap mb-4">
+  <span
+    v-for="tag in note.tags"
+    :key="tag"
+    class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full"
+  >
+    {{ tag }}
+  </span>
+</div>
               <div class="flex items-center justify-between">
                 <span class="text-xs text-gray-400">{{ new Date(note.createdAt).toLocaleDateString() }}</span>
                 <div class="flex gap-2">
@@ -122,7 +193,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useNotesStore } from '../stores/notes'
@@ -131,16 +202,43 @@ const router = useRouter()
 const auth = useAuthStore()
 const notes = useNotesStore()
 const search = ref('')
+const showDropdown = ref(false)
+const selectedTag = ref('')
+
+const allTags = computed(() => {
+  const tagSet = new Set()
+  notes.notes.forEach(n => {
+    console.log('note tags:', n.title, n.tags)
+    n.tags?.forEach(t => tagSet.add(t))
+  })
+  return [...tagSet]
+})
+function handleClickOutside(e) {
+  if (!e.target.closest('.relative')) {
+    showDropdown.value = false
+  }
+}
+
+onMounted(() => {
+  notes.fetchNotes()
+  document.addEventListener('click', handleClickOutside)
+})
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 
 const filtered = computed(() => {
-  const result = notes.notes.filter(n =>
-    n.title.toLowerCase().includes(search.value.toLowerCase())
-  )
+  const result = notes.notes.filter(n => {
+    const matchesSearch = n.title.toLowerCase().includes(search.value.toLowerCase())
+    const matchesTag = selectedTag.value ? n.tags?.includes(selectedTag.value) : true
+    return matchesSearch && matchesTag
+  })
   return [
     ...result.filter(n => n.pinned),
     ...result.filter(n => !n.pinned)
   ]
 })
+
 async function handleDelete(id) {
   await notes.deleteNote(id)
 }
@@ -150,7 +248,5 @@ function handleLogout() {
   router.push('/login')
 }
 
-onMounted(() => {
-  notes.fetchNotes()
-})
+
 </script>
