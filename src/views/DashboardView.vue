@@ -189,6 +189,27 @@
         </div>
       </div>
     </div>
+    <!-- Delete confirm modal -->
+<div v-if="showConfirm" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+  <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
+    <h3 class="text-lg font-bold text-gray-800 mb-2">Delete note?</h3>
+    <p class="text-sm text-gray-500 mb-6">This action cannot be undone.</p>
+    <div class="flex gap-3">
+      <button
+        @click="showConfirm = false"
+        class="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition"
+      >
+        Cancel
+      </button>
+      <button
+        @click="confirmDelete"
+        class="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 transition"
+      >
+        Delete
+      </button>
+    </div>
+  </div>
+</div>
   </div>
 </template>
 
@@ -204,6 +225,8 @@ const notes = useNotesStore()
 const search = ref('')
 const showDropdown = ref(false)
 const selectedTag = ref('')
+const showConfirm = ref(false)
+const noteToDelete = ref(null)
 
 const allTags = computed(() => {
   const tagSet = new Set()
@@ -239,10 +262,16 @@ const filtered = computed(() => {
   ]
 })
 
-async function handleDelete(id) {
-  await notes.deleteNote(id)
+function handleDelete(id) {
+  noteToDelete.value = id
+  showConfirm.value = true
 }
 
+async function confirmDelete() {
+  await notes.deleteNote(noteToDelete.value)
+  showConfirm.value = false
+  noteToDelete.value = null
+}
 function handleLogout() {
   auth.logout()
   router.push('/login')
