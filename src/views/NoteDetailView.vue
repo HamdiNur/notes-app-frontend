@@ -84,9 +84,9 @@
         </div>
 
         <!-- Character count -->
-        <p class="text-xs text-gray-400 text-right mb-4">
-          {{ content.length }} characters
-        </p>
+     <p class="text-xs text-gray-400 text-right mb-4">
+  {{ content.length }} characters · {{ content.trim() ? content.trim().split(/\s+/).length : 0 }} words
+</p>
 
         <div class="flex gap-3">
           <button

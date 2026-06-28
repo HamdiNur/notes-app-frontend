@@ -75,6 +75,12 @@
             class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
           ></textarea>
         </div>
+        
+        <!-- Character count -->
+     <p class="text-xs text-gray-400 text-right mb-4">
+  {{ content.length }} characters · {{ content.trim() ? content.trim().split(/\s+/).length : 0 }} words
+</p>
+
 
         <button
           @click="handleCreate"
