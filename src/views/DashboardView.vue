@@ -1,39 +1,34 @@
 <template>
   <div class="min-h-screen bg-gray-100">
     <!-- Navbar -->
-<nav class="bg-white shadow-sm px-6 py-4 flex items-center justify-between relative">
-  <h1 class="text-xl font-bold text-blue-600">📝 Notes App</h1>
+<nav class="bg-white shadow-sm px-4 sm:px-6 py-4 flex items-center justify-between relative">
+  <h1 class="text-lg sm:text-xl font-bold text-blue-600">📝 Notes App</h1>
   
   <div class="relative">
     <button
       @click="showDropdown = !showDropdown"
-      class="flex items-center gap-2 hover:bg-gray-50 px-3 py-2 rounded-lg transition"
+      class="flex items-center gap-2 hover:bg-gray-50 px-2 sm:px-3 py-2 rounded-lg transition"
     >
-      <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold">
+      <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
         {{ auth.user?.name?.charAt(0).toUpperCase() }}
       </div>
-      <span class="text-sm font-medium text-gray-700">{{ auth.user?.name }}</span>
+      <span class="hidden sm:block text-sm font-medium text-gray-700">{{ auth.user?.name }}</span>
       <span class="text-gray-400 text-xs">{{ showDropdown ? '▲' : '▼' }}</span>
     </button>
 
-    <!-- Dropdown -->
+    <!-- Dropdown stays the same -->
     <div
       v-if="showDropdown"
       class="absolute right-0 top-12 w-56 bg-white rounded-xl shadow-lg border border-gray-100 z-50 overflow-hidden"
     >
-      <!-- User info -->
       <div class="px-4 py-3 border-b border-gray-100">
         <p class="text-sm font-semibold text-gray-800">{{ auth.user?.name }}</p>
         <p class="text-xs text-gray-400 mt-0.5">{{ auth.user?.email }}</p>
       </div>
-
-      <!-- Stats -->
       <div class="px-4 py-3 border-b border-gray-100">
         <p class="text-xs text-gray-400">Total notes</p>
         <p class="text-sm font-bold text-blue-600">{{ notes.notes.length }} notes</p>
       </div>
-
-      <!-- Actions -->
       <div class="px-2 py-2">
         <button
           @click="handleLogout"
@@ -47,20 +42,20 @@
 </nav>
 
     <!-- Main -->
-    <div class="max-w-4xl mx-auto px-6 py-8">
+<div class="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       <!-- Header -->
-      <div class="flex items-center justify-between mb-6">
-        <div>
-          <h2 class="text-2xl font-bold text-gray-800">My Notes</h2>
-          <p class="text-sm text-gray-500">{{ notes.notes.length }} notes</p>
-        </div>
-        <RouterLink
-          to="/notes/new"
-          class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
-        >
-          + New Note
-        </RouterLink>
-      </div>
+  <div class="flex items-center justify-between mb-6">
+      <div>
+      <h2 class="text-xl sm:text-2xl font-bold text-gray-800">My Notes</h2>
+      <p class="text-sm text-gray-500">{{ notes.notes.length }} notes</p>
+    </div>
+    <RouterLink
+      to="/notes/new"
+      class="bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+    >
+      + New Note
+    </RouterLink>
+  </div>
 
       <!-- Search -->
       <input
