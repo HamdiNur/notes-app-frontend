@@ -1,6 +1,7 @@
 <template>
   <div class="min-h-screen bg-gray-100">
     <!-- Navbar -->
+     <!--  -->
 <nav class="bg-white shadow-sm px-4 sm:px-6 py-4 flex items-center justify-between relative">
   <h1 class="text-lg sm:text-xl font-bold text-blue-600">📝 Notes App</h1>
   
